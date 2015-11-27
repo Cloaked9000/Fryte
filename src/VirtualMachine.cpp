@@ -11,33 +11,33 @@ VirtualMachine::~VirtualMachine()
     //dtor
 }
 
-void VirtualMachine::interpret(char bytecode[], unsigned int byteSize)
+void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
 {
-    for(unsigned int a = 0; a < byteSize; a++)
+    for(int a = 0; a < byteSize; a++)
     {
-        const char &currentInstruction = bytecode[a];
+        const unsigned char &currentInstruction = bytecode[a];
         switch(currentInstruction)
         {
         case Instruction::CONSOLE_OUT:
+        {
+            Type popped = pop();
+            switch(popped.type)
             {
-                Type popped = pop();
-                switch(popped.type)
-                {
-                    case DataType::INT:
-                        std::cout << popped.intData;
-                        break;
-                    case DataType::CHAR:
-                        std::cout << popped.charData;
-                        break;
-                    case DataType::BOOL:
-                        std::cout << popped.boolData;
-                        break;
-                    case DataType::STRING:
-                        std::cout << popped.stringData;
-                        break;
-                }
+            case DataType::INT:
+                std::cout << popped.intData;
+                break;
+            case DataType::CHAR:
+                std::cout << popped.charData;
+                break;
+            case DataType::BOOL:
+                std::cout << popped.boolData;
+                break;
+            case DataType::STRING:
+                std::cout << *popped.stringData;
+                break;
             }
-            break;
+        }
+        break;
         case Instruction::CREATE_INT:
             push_integer(bytecode[++a]);
             break;
@@ -48,11 +48,35 @@ void VirtualMachine::interpret(char bytecode[], unsigned int byteSize)
             push_bool(bytecode[++a]);
             break;
         case Instruction::CREATE_STRING:
+        {
             unsigned int stringSize = bytecode[++a]; //String length stored in next byte
-            char *wholeString = new char[stringSize]; //Allocate memory on heap for the string
+            std::string *wholeString = new std::string; //Allocate memory on heap for the string
+            wholeString->resize(stringSize);
             for(unsigned int cChar = 0; cChar < stringSize; cChar++) //Read in the string from the bytecode into the allocated memory
-                wholeString[cChar] = bytecode[++a];
+                (*wholeString)[cChar] = bytecode[++a];
+
             push_string(wholeString); //Push the resulting char*
+            break;
+        }
+        case Instruction::GOTO:
+            a = static_cast<int>(bytecode[a+1])-1;
+            break;
+        case Instruction::CONSOLE_IN:
+            switch(stack[stackSize-1].type)
+            {
+            case DataType::INT:
+                std::cin >> stack[stackSize-1].intData;
+                break;
+            case DataType::CHAR:
+                std::cin >> stack[stackSize-1].charData;
+                break;
+            case DataType::BOOL:
+                std::cin >> stack[stackSize-1].boolData;
+                break;
+            case DataType::STRING:
+                std::getline(std::cin, *stack[stackSize-1].stringData);
+                break;
+            }
             break;
         }
     }
@@ -79,7 +103,7 @@ void VirtualMachine::push_bool(bool value)
     stack[stackSize++] = Type(value);
 }
 
-void VirtualMachine::push_string(char* value)
+void VirtualMachine::push_string(std::string* value)
 {
     pushStackCheck();
 
