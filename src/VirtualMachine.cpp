@@ -78,6 +78,9 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
                 break;
             }
             break;
+        case Instruction::STACK_SEEK:
+            stackSize = bytecode[++a];
+            break;
         }
     }
 }

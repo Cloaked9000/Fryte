@@ -14,6 +14,7 @@ enum Instruction
     CREATE_STRING = 4, //Pushes a string to the stack, name(length, data1, data2, etc)
     GOTO = 5, //Sets the current bytecode position, name(data)
     CONSOLE_IN = 6, //Reads in a value, name(data)
+    STACK_SEEK = 7, //Sets the stack position
 };
 
 //List of data types which the virtual machine supports
