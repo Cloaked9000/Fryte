@@ -15,26 +15,28 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
 {
     for(int a = 0; a < byteSize; a++)
     {
-        const unsigned char &currentInstruction = bytecode[a];
+        int currentInstruction = bytecode[a];
         switch(currentInstruction)
         {
         case Instruction::CONSOLE_OUT:
         {
-            Type popped = pop();
-            switch(popped.type)
+            Type &variable = stack[bytecode[++a]];
+            switch(variable.type)
             {
             case DataType::INT:
-                std::cout << popped.intData;
+                std::cout << variable.intData;
                 break;
             case DataType::CHAR:
-                std::cout << popped.charData;
+                std::cout << variable.charData;
                 break;
             case DataType::BOOL:
-                std::cout << popped.boolData;
+                std::cout << variable.boolData;
                 break;
             case DataType::STRING:
-                std::cout << *popped.stringData;
+                std::cout << *variable.stringData;
                 break;
+            default:
+                throwError(std::string("Failed to CONSOLE_OUT, Unknown data type '" + std::to_string(variable.type) + "'"));
             }
         }
         break;
@@ -62,25 +64,29 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
             a = static_cast<int>(bytecode[a+1])-1;
             break;
         case Instruction::CONSOLE_IN:
-            switch(stack[stackSize-1].type)
+        {
+            Type &variable = stack[bytecode[++a]];
+            switch(variable.type)
             {
             case DataType::INT:
-                std::cin >> stack[stackSize-1].intData;
+                std::cin >> variable.intData;
                 break;
             case DataType::CHAR:
-                std::cin >> stack[stackSize-1].charData;
+                std::cin >> variable.charData;
                 break;
             case DataType::BOOL:
-                std::cin >> stack[stackSize-1].boolData;
+                std::cin >> variable.boolData;
                 break;
             case DataType::STRING:
-                std::getline(std::cin, *stack[stackSize-1].stringData);
+                std::getline(std::cin, *variable.stringData);
                 break;
+            default:
+                throwError(std::string("Failed to CONSOLE_IN, Unknown data type '" + std::to_string(variable.type) + "'"));
             }
-            break;
-        case Instruction::STACK_SEEK:
-            stackSize = bytecode[++a];
-            break;
+        }
+        break;
+        default:
+            throwError("Unknown instruction '" + std::to_string(currentInstruction) + "'");
         }
     }
 }
@@ -113,6 +119,13 @@ void VirtualMachine::push_string(std::string* value)
     stack[stackSize++] = Type(value);
 }
 
+void VirtualMachine::push_type(Type value)
+{
+    pushStackCheck();
+
+    stack[stackSize++] = value;
+}
+
 Type VirtualMachine::pop()
 {
     popStackCheck();
@@ -124,7 +137,7 @@ void VirtualMachine::popStackCheck()
 {
     if(stackSize == 0)
     {
-        std::cout << "\nCouldn't pop from stack, stack empty!";
+        throwError("\nCouldn't pop from stack, stack empty!");
         throw 1;
     }
 }
@@ -133,7 +146,11 @@ void VirtualMachine::pushStackCheck()
 {
     if(stackSize == maxStackSize)
     {
-        std::cout << "\nCouldn't push to stack, stack full!";
-        throw 2;
+        throwError("\nCouldn't push to stack, stack full!");
     }
+}
+
+void VirtualMachine::throwError(const std::string& reason)
+{
+    throw std::string(reason);
 }
