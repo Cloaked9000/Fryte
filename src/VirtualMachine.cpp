@@ -20,7 +20,7 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
         {
         case Instruction::CONSOLE_OUT:
         {
-            Type &variable = stack[bytecode[++a]];
+            Type variable = pop();
             switch(variable.type)
             {
             case DataType::INT:
@@ -83,8 +83,59 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
             default:
                 throwError(std::string("Failed to CONSOLE_IN, Unknown data type '" + std::to_string(variable.type) + "'"));
             }
+            break;
         }
-        break;
+        case Instruction::MATH_ADD:
+            {
+                unsigned int numberCount = bytecode[++a]; //Get number of bytes to add from bytecode
+                int result = 0;
+                for(unsigned int a = 0; a < numberCount; a++) //For the number of arguments specified, pop them all off the stack and add to 'result'
+                    result += pop().intData;
+                push_integer(result); //Push the result to the stack
+            }
+        case Instruction::MATH_SUBTRACT:
+            {
+                unsigned int numberCount = bytecode[++a]; //Get number of bytes to subtract from bytecode
+                int result = 0;
+                for(unsigned int a = 0; a < numberCount; a++) //For the number of arguments specified, pop them all off the stack and subtract from 'result'
+                    result -= pop().intData;
+                push_integer(result); //Push the result to the stack
+                break;
+            }
+        case Instruction::MATH_MULTIPLY:
+            {
+                unsigned int numberCount = bytecode[++a]; //Get number of bytes to multiply from bytecode
+                int result = 0;
+                for(unsigned int a = 0; a < numberCount; a++) //For the number of arguments specified, pop them all off the stack and multiply by result
+                    result *= pop().intData;
+                push_integer(result); //Push the result to the stack
+                break;
+            }
+        case Instruction::MATH_DIVIDE:
+            {
+                unsigned int numberCount = bytecode[++a]; //Get number of bytes to divide from bytecode
+                int result = 1;
+                for(unsigned int a = 0; a < numberCount; a++) //For the number of arguments specified, pop them all off the stack and divide
+                    result /= pop().intData;
+                push_integer(result); //Push the result to the stack
+                break;
+            }
+        case Instruction::MATH_MOD:
+            {
+                unsigned int numberCount = bytecode[++a]; //Get number of bytes to add mod bytecode
+                int result = 1;
+                for(unsigned int a = 0; a < numberCount; a++) //For the number of arguments specified, pop them all off the stack and add to 'result'
+                    result %= pop().intData;
+                push_integer(result); //Push the result to the stack
+                break;
+            }
+        case Instruction::CLONE_TOP:
+            {
+                push_type(stack[bytecode[++a]]); //Clone a variable from a position in the stack to the top of the stack
+                break;
+            }
+
+
         default:
             throwError("Unknown instruction '" + std::to_string(currentInstruction) + "'");
         }
