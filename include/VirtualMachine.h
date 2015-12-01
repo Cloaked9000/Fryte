@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 //List of instructions which the virtual machine supports
 enum Instruction
@@ -46,7 +47,6 @@ struct Type
         intData = data;
         type = DataType::INT;
     }
-
     Type(unsigned char data) //Character constructor
     {
         charData = data;

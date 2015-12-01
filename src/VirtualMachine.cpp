@@ -92,13 +92,20 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
                 for(unsigned int a = 0; a < numberCount; a++) //For the number of arguments specified, pop them all off the stack and add to 'result'
                     result += pop().intData;
                 push_integer(result); //Push the result to the stack
+                break;
             }
         case Instruction::MATH_SUBTRACT:
             {
+                //TEMPORARY
                 unsigned int numberCount = bytecode[++a]; //Get number of bytes to subtract from bytecode
+                std::vector<int> values;
                 int result = 0;
                 for(unsigned int a = 0; a < numberCount; a++) //For the number of arguments specified, pop them all off the stack and subtract from 'result'
-                    result -= pop().intData;
+                    values.emplace_back(pop().intData);
+                result = values.back();
+                values.pop_back();
+                for(auto iter = values.rbegin(); iter != values.rend(); iter++)
+                    result -= *iter;
                 push_integer(result); //Push the result to the stack
                 break;
             }
@@ -189,7 +196,6 @@ void VirtualMachine::popStackCheck()
     if(stackSize == 0)
     {
         throwError("\nCouldn't pop from stack, stack empty!");
-        throw 1;
     }
 }
 
