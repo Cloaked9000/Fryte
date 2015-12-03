@@ -21,6 +21,7 @@ enum Instruction
     MATH_DIVIDE = 10, //Divides two or more numbers. MATH_DIVIDE(NumberOfThingsToAdd, data1, data2, etc)
     MATH_MOD = 11, //Modulus two or more things. MATH_MOD(NumberOfThingsToAdd, data1, data2, etc)
     CLONE_TOP = 12, //Clones a variable's contents from a position in the stack to the top of the stack. CLONE_TOP(StackPos)
+    CONCENTRATE_STRINGS = 13, //Concentrates strings together into a new string. CONCENTRATE_STRINGS(NumberOfStrings)
 };
 
 //List of data types which the virtual machine supports
@@ -38,6 +39,10 @@ struct Type
     DataType type; //Store the type of the variable
 
     Type() //Default constructor
+    {
+
+    }
+    virtual ~Type()
     {
 
     }
@@ -59,9 +64,9 @@ struct Type
         type = DataType::BOOL;
     }
 
-    Type(std::string *data) //String constructor
+    Type(const std::string &data) //String constructor
     {
-        stringData = data;
+        stringData = new std::string(data);
         type = DataType::STRING;
     }
 
@@ -87,7 +92,7 @@ public:
     void push_integer(int value); //Pushes an integer onto the stack
     void push_char(unsigned char value); //Pushes a character onto the stack
     void push_bool(bool value); //Pushes a boolean value onto the stack
-    void push_string(std::string *value); //Pushes a string onto the stack
+    void push_string(const std::string &value); //Pushes a string onto the stack
     void push_type(Type value); //Pushes a value onto the stack
 
     Type pop(); //Pops a value off the stack

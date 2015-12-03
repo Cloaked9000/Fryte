@@ -52,10 +52,10 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
         case Instruction::CREATE_STRING:
         {
             unsigned int stringSize = bytecode[++a]; //String length stored in next byte
-            std::string *wholeString = new std::string; //Allocate memory on heap for the string
-            wholeString->resize(stringSize);
+            std::string wholeString;
+            wholeString.resize(stringSize);
             for(unsigned int cChar = 0; cChar < stringSize; cChar++) //Read in the string from the bytecode into the allocated memory
-                (*wholeString)[cChar] = bytecode[++a];
+                wholeString[cChar] = bytecode[++a];
 
             push_string(wholeString); //Push the resulting char*
             break;
@@ -160,7 +160,23 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
                 push_type(stack[bytecode[++a]]); //Clone a variable from a position in the stack to the top of the stack
                 break;
             }
+        case Instruction::CONCENTRATE_STRINGS:
+            {
+                //Pop strings off first that need to be concentrated
+                unsigned int numberOfStrings = bytecode[++a];
+                std::string stringBuffer;
+                std::vector<std::string> poppedStrings;
+                for(unsigned int a = 0; a < numberOfStrings; a++)
+                    poppedStrings.emplace_back(*pop().stringData);
 
+                //Now add the strings to a buffer in reverse, as we need the first one to be first in the string, not last
+                for(auto iter = poppedStrings.rbegin(); iter != poppedStrings.rend(); iter++)
+                    stringBuffer += *iter;
+
+                //Push to stack
+                push_string(stringBuffer);
+                break;
+            }
 
         default:
             throwError("Unknown instruction '" + std::to_string(currentInstruction) + "'");
@@ -189,7 +205,7 @@ void VirtualMachine::push_bool(bool value)
     stack[stackSize++] = Type(value);
 }
 
-void VirtualMachine::push_string(std::string* value)
+void VirtualMachine::push_string(const std::string &value)
 {
     pushStackCheck();
 
