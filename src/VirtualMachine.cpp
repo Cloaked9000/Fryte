@@ -185,6 +185,7 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
             }
         case Instruction::COMPARE_VALUES:
             {
+                a++; //Skip number of things to compare, not currently used
                 Type val1 = pop();
                 Type val2 = pop();
                 if(val1.intData == val2.intData) //If the two last values on the stack are equal, push true
