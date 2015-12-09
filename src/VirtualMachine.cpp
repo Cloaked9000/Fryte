@@ -183,6 +183,20 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
                 push_string(stringBuffer);
                 break;
             }
+        case Instruction::COMPARE_VALUES:
+            {
+                Type val1 = pop();
+                Type val2 = pop();
+                if(val1.intData == val2.intData) //If the two last values on the stack are equal, push true
+                {
+                    push_bool(true);
+                }
+                else //Else they are unequal, push false
+                {
+                    push_bool(false);
+                }
+                break;
+            }
 
         default:
             throwError("Unknown instruction '" + std::to_string(currentInstruction) + "'");
