@@ -186,15 +186,45 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
         case Instruction::COMPARE_VALUES:
             {
                 a++; //Skip number of things to compare, not currently used
+
+                //Pop off the things that we're comparing
                 Type val1 = pop();
                 Type val2 = pop();
-                if(val1.intData == val2.intData) //If the two last values on the stack are equal, push true
+
+                //Ensure that they're the same type or the union comparison will screw up
+                if(val2.type != val1.type)
                 {
-                    push_bool(true);
+                    throwError("Can't compare different data types!");
                 }
-                else //Else they are unequal, push false
+
+                //Compare different things depending on the variable types
+                switch(val1.type)
                 {
-                    push_bool(false);
+                case INT:
+                    if(val1.intData == val2.intData)
+                        push_bool(true);
+                    else
+                        push_bool(false);
+                    break;
+                case CHAR:
+                    if(val1.charData == val2.charData)
+                        push_bool(true);
+                    else
+                        push_bool(false);
+                    break;
+                case STRING:
+                    if(*val1.stringData == *val2.stringData)
+                        push_bool(true);
+                    else
+                        push_bool(false);
+                    break;
+                case BOOL:
+                    if(val1.boolData == val2.boolData)
+                        push_bool(true);
+                    else
+                        push_bool(false);
+                default:
+                    throwError("Internal error, attempt to compare unknown data type!");
                 }
                 break;
             }
@@ -202,9 +232,14 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
             {
                 //Move bytecode offset to the one specified in the bytecode.
                 //bytecode[a+1] = position to set if false
-                if(!pop().boolData)
+                Type val = pop();
+                if(!val.boolData)
                 {
                     a = bytecode[a+1];
+                }
+                else //Else move past the false position and continue running the bytecode
+                {
+                    a++;
                 }
                 break;
             }
