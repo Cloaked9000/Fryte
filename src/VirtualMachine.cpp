@@ -198,7 +198,16 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
                 }
                 break;
             }
-
+        case Instruction::CONDITIONAL_IF:
+            {
+                //Move bytecode offset to the one specified in the bytecode.
+                //bytecode[a+1] = position to set if false
+                if(!pop().boolData)
+                {
+                    a = bytecode[a+1];
+                }
+                break;
+            }
         default:
             throwError("Unknown instruction '" + std::to_string(currentInstruction) + "'");
         }
