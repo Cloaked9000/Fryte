@@ -233,6 +233,10 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
                 //Move bytecode offset to the one specified in the bytecode.
                 //bytecode[a+1] = position to set if false
                 Type val = pop();
+                if(val.type != DataType::BOOL)
+                {
+                    throwError(std::string("Can't convert type " + std::to_string(val.type) + " to boolean for comparison"));
+                }
                 if(!val.boolData)
                 {
                     a = bytecode[a+1];
