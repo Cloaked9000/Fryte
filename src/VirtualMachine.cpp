@@ -78,7 +78,7 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
                 std::cin >> variable.boolData;
                 break;
             case DataType::STRING:
-                std::getline(std::cin, *variable.stringData);
+                std::cin >> *variable.stringData;
                 break;
             default:
                 throwError(std::string("Failed to CONSOLE_IN, Unknown data type '" + std::to_string(variable.type) + "'"));
@@ -185,6 +185,7 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
             }
         case Instruction::COMPARE_VALUES:
             {
+                std::cout << "\nVALUE COMPARE";
                 a++; //Skip number of things to compare, not currently used
 
                 //Pop off the things that we're comparing
@@ -230,6 +231,7 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
             }
         case Instruction::CONDITIONAL_IF:
             {
+                std::cout << "\nIF";
                 //Move bytecode offset to the one specified in the bytecode.
                 //bytecode[a+1] = position to set if false
                 Type val = pop();
@@ -245,6 +247,13 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
                 {
                     a++;
                 }
+                break;
+            }
+        case Instruction::SET_VARIABLE:
+            {
+                Type val = pop(); //Value to set it to
+                unsigned int variableStackOffset = bytecode[++a]; //Find which variable to set
+                stack[variableStackOffset] = val; //Update the value
                 break;
             }
         default:

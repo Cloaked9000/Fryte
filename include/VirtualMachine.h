@@ -24,6 +24,7 @@ enum Instruction
     CONCENTRATE_STRINGS = 13, //Concentrates strings together into a new string. CONCENTRATE_STRINGS(NumberOfStrings)
     COMPARE_VALUES = 14, //Compare the last two things on the stack and add true or false if they are equal
     CONDITIONAL_IF = 15, //If the last thing on the stack is 1, moves bytecode position to next, else moves bytecode position to next+1
+    SET_VARIABLE = 16, //Sets the data of a variable in the stack. SET_VARIABLE(stackPos). New value taken from top of stack.
 };
 
 //List of data types which the virtual machine supports
