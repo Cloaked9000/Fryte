@@ -185,7 +185,6 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
             }
         case Instruction::COMPARE_VALUES:
             {
-                std::cout << "\nVALUE COMPARE";
                 a++; //Skip number of things to compare, not currently used
 
                 //Pop off the things that we're comparing
@@ -231,7 +230,6 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
             }
         case Instruction::CONDITIONAL_IF:
             {
-                std::cout << "\nIF";
                 //Move bytecode offset to the one specified in the bytecode.
                 //bytecode[a+1] = position to set if false
                 Type val = pop();
