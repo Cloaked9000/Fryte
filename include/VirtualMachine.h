@@ -22,9 +22,14 @@ enum Instruction
     MATH_MOD = 11, //Modulus two or more things. MATH_MOD(NumberOfThingsToAdd, data1, data2, etc)
     CLONE_TOP = 12, //Clones a variable's contents from a position in the stack to the top of the stack. CLONE_TOP(StackPos)
     CONCENTRATE_STRINGS = 13, //Concentrates strings together into a new string. CONCENTRATE_STRINGS(NumberOfStrings)
-    COMPARE_VALUES = 14, //Compare the last two things on the stack and add true or false if they are equal
+    COMPARE_EQUAL = 14, //Compare the last two things on the stack and add true or false if they are equal
     CONDITIONAL_IF = 15, //If the last thing on the stack is 1, moves bytecode position to next, else moves bytecode position to next+1
     SET_VARIABLE = 16, //Sets the data of a variable in the stack. SET_VARIABLE(stackPos). New value taken from top of stack.
+    COMPARE_UNEQUAL = 17, //Compare the last two things on the stack and add true or false if they are unequal
+    COMPARE_LESS_THAN = 18, //Compare last two things on the stack and push true if object one is less than object two
+    COMPARE_MORE_THAN = 19, //Compare last two things on the stack and push true if object one is more than object two
+    COMPARE_LESS_THAN_OR_EQUAL = 20, //Compare last two things on the stack and pushes true if object one is less than or equal to object two
+    COMPARE_MORE_THAN_OR_EQUAL = 21, //Compare last two things on the stack and pushes true if object one is more than or equal to object two
 };
 
 //List of data types which the virtual machine supports
@@ -104,6 +109,8 @@ private:
     void popStackCheck(); //Checks that a value CAN be popped off, if not, throws an error
     void pushStackCheck(); //Checks that a value CAN be pushed to the stack, if not, throw an error
     void throwError(const std::string &reason); //Throws an error, this function adds additional information to the reason
+    bool isEqual(const Type &v1, const Type &v2); //Compares two values, returns true if they equal, false otherwise. Throws error if different type.
+    bool isLessThan(const Type &v1, const Type &v2); //Compares two values, returns true if v1 is less than v2, false otherwise. Throws error if different types.
 
     static const unsigned int maxStackSize = 500; //Maximum stack size
     unsigned int stackSize; //Current stack position

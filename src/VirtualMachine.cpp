@@ -183,49 +183,14 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
                 push_string(stringBuffer);
                 break;
             }
-        case Instruction::COMPARE_VALUES:
+        case Instruction::COMPARE_EQUAL:
             {
                 a++; //Skip number of things to compare, not currently used
 
-                //Pop off the things that we're comparing
-                Type val1 = pop();
-                Type val2 = pop();
-
-                //Ensure that they're the same type or the union comparison will screw up
-                if(val2.type != val1.type)
-                {
-                    throwError("Can't compare different data types!");
-                }
-
-                //Compare different things depending on the variable types
-                switch(val1.type)
-                {
-                case INT:
-                    if(val1.intData == val2.intData)
-                        push_bool(true);
-                    else
-                        push_bool(false);
-                    break;
-                case CHAR:
-                    if(val1.charData == val2.charData)
-                        push_bool(true);
-                    else
-                        push_bool(false);
-                    break;
-                case STRING:
-                    if(*val1.stringData == *val2.stringData)
-                        push_bool(true);
-                    else
-                        push_bool(false);
-                    break;
-                case BOOL:
-                    if(val1.boolData == val2.boolData)
-                        push_bool(true);
-                    else
-                        push_bool(false);
-                default:
-                    throwError("Internal error, attempt to compare unknown data type!");
-                }
+                if(isEqual(pop(), pop()))
+                    push_bool(true);
+                else
+                    push_bool(false);
                 break;
             }
         case Instruction::CONDITIONAL_IF:
@@ -254,10 +219,123 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
                 stack[variableStackOffset] = val; //Update the value
                 break;
             }
+        case Instruction::COMPARE_UNEQUAL: //Compares last two things on the stack, returns true if they don't match
+            {
+                a++; //Skip number of things to compare, not currently used
+
+                if(!isEqual(pop(), pop()))
+                    push_bool(true);
+                else
+                    push_bool(false);
+                break;
+            }
+        case Instruction::COMPARE_LESS_THAN:
+            {
+                a++; //Skip number of things to compare, not currently used
+
+                const Type &v1 = pop(), v2 = pop();
+                if(!isLessThan(v1, v2) && !isEqual(v1, v2))
+                    push_bool(true);
+                else
+                    push_bool(false);
+                break;
+            }
+        case Instruction::COMPARE_MORE_THAN:
+            {
+                a++; //Skip number of things to compare, not currently used
+                const Type &v1 = pop(), v2 = pop();
+                if(isLessThan(v1, v2) && !isEqual(v1, v2))
+                    push_bool(true);
+                else
+                    push_bool(false);
+                break;
+            }
         default:
             throwError("Unknown instruction '" + std::to_string(currentInstruction) + "'");
         }
     }
+}
+
+bool VirtualMachine::isLessThan(const Type& v1, const Type& v2)
+{
+    //Ensure that they're the same type or the union comparison will screw up
+    if(v2.type != v1.type)
+    {
+        throwError("Can't compare different data types!");
+    }
+
+    //Compare different things depending on the variable types
+    switch(v1.type)
+    {
+    case INT:
+        if(v1.intData < v2.intData)
+            return true;
+        else
+            return false;
+        break;
+    case CHAR:
+        if(v1.charData < v2.charData)
+            return true;
+        else
+            return false;
+        break;
+    case STRING:
+        if(v1.stringData->size() < v2.stringData->size())
+            return true;
+        else
+            return false;
+        break;
+    case BOOL:
+        if(v1.boolData < v2.boolData)
+            return true;
+        else
+            return false;
+    default:
+        throwError("Internal error, attempt to compare unknown data type");
+    }
+    throwError("Internal error, isEqual comparison failed for unknown reason");
+    return false;
+}
+
+bool VirtualMachine::isEqual(const Type& v1, const Type& v2)
+{
+    //Ensure that they're the same type or the union comparison will screw up
+    if(v2.type != v1.type)
+    {
+        throwError("Can't compare different data types!");
+    }
+
+    //Compare different things depending on the variable types
+    switch(v1.type)
+    {
+    case INT:
+        if(v1.intData == v2.intData)
+            return true;
+        else
+            return false;
+        break;
+    case CHAR:
+        if(v1.charData == v2.charData)
+            return true;
+        else
+            return false;
+        break;
+    case STRING:
+        if(*v1.stringData == *v2.stringData)
+            return true;
+        else
+            return false;
+        break;
+    case BOOL:
+        if(v1.boolData == v2.boolData)
+            return true;
+        else
+            return false;
+    default:
+        throwError("Internal error, attempt to compare unknown data type");
+    }
+    throwError("Internal error, isEqual comparison failed for unknown reason");
+    return false;
 }
 
 void VirtualMachine::push_integer(int value)
