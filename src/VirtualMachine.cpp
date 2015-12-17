@@ -185,9 +185,9 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
             }
         case Instruction::COMPARE_EQUAL:
             {
-                a++; //Skip number of things to compare, not currently used
+                unsigned int compareCount = bytecode[++a]; //Number of things to compare
 
-                if(isEqual(pop(), pop()))
+                if(isEqual({pop(), pop()}))
                     push_bool(true);
                 else
                     push_bool(false);
@@ -223,7 +223,7 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
             {
                 a++; //Skip number of things to compare, not currently used
 
-                if(!isEqual(pop(), pop()))
+                if(!isEqual({pop(), pop()}))
                     push_bool(true);
                 else
                     push_bool(false);
@@ -234,7 +234,7 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
                 a++; //Skip number of things to compare, not currently used
 
                 const Type &v1 = pop(), v2 = pop();
-                if(!isLessThan(v1, v2) && !isEqual(v1, v2))
+                if(!isLessThan(v1, v2) && !isEqual({v1, v2}))
                     push_bool(true);
                 else
                     push_bool(false);
@@ -244,7 +244,7 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
             {
                 a++; //Skip number of things to compare, not currently used
                 const Type &v1 = pop(), v2 = pop();
-                if(isLessThan(v1, v2) && !isEqual(v1, v2))
+                if(isLessThan(v1, v2) && !isEqual({v1, v2}))
                     push_bool(true);
                 else
                     push_bool(false);
@@ -255,7 +255,7 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
                 a++; //Skip number of things to compare, not currently used
 
                 const Type &v1 = pop(), v2 = pop();
-                if(isLessThan(v1, v2) || isEqual(v1, v2))
+                if(isLessThan(v1, v2) || isEqual({v1, v2}))
                     push_bool(true);
                 else
                     push_bool(false);
@@ -265,10 +265,15 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
             {
                 a++; //Skip number of things to compare, not currently used
                 const Type &v1 = pop(), v2 = pop();
-                if(!isLessThan(v1, v2) || isEqual(v1, v2))
+                if(!isLessThan(v1, v2) || isEqual({v1, v2}))
                     push_bool(true);
                 else
                     push_bool(false);
+                break;
+            }
+        case Instruction::COMPARE_AND:
+            {
+                std::cout << "\nCompare &&";
                 break;
             }
         default:
@@ -318,13 +323,19 @@ bool VirtualMachine::isLessThan(const Type& v1, const Type& v2)
     return false;
 }
 
-bool VirtualMachine::isEqual(const Type& v1, const Type& v2)
+bool VirtualMachine::isEqual(const std::vector<Type> &vals)
 {
     //Ensure that they're the same type or the union comparison will screw up
-    if(v2.type != v1.type)
+    DataType commonType = vals[0].type;
+    for(unsigned int a = 1; a < vals.size(); a++)
     {
-        throwError("Can't compare different data types!");
+        if(vals[a].type != commonType)
+            throwError("Can't compare different data types!");
     }
+
+    //Temp
+    Type v1 = vals[0];
+    Type v2 = vals[1];
 
     //Compare different things depending on the variable types
     switch(v1.type)

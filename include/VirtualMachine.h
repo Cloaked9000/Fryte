@@ -30,6 +30,7 @@ enum Instruction
     COMPARE_MORE_THAN = 19, //Compare last two things on the stack and push true if object one is more than object two
     COMPARE_LESS_THAN_OR_EQUAL = 20, //Compare last two things on the stack and pushes true if object one is less than or equal to object two
     COMPARE_MORE_THAN_OR_EQUAL = 21, //Compare last two things on the stack and pushes true if object one is more than or equal to object two
+    COMPARE_AND = 22, //Compare the last X things on the stack and push true if they are both true. False otherwise. COMPARE_AND(NumberOfThings, 1, 2, 3...)
 };
 
 //List of data types which the virtual machine supports
@@ -109,7 +110,7 @@ private:
     void popStackCheck(); //Checks that a value CAN be popped off, if not, throws an error
     void pushStackCheck(); //Checks that a value CAN be pushed to the stack, if not, throw an error
     void throwError(const std::string &reason); //Throws an error, this function adds additional information to the reason
-    bool isEqual(const Type &v1, const Type &v2); //Compares two values, returns true if they equal, false otherwise. Throws error if different type.
+    bool isEqual(const std::vector<Type> &vals); //Compares values, returns true if they equal, false otherwise. Throws error if different type.
     bool isLessThan(const Type &v1, const Type &v2); //Compares two values, returns true if v1 is less than v2, false otherwise. Throws error if different types.
 
     static const unsigned int maxStackSize = 500; //Maximum stack size
