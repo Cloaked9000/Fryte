@@ -250,6 +250,27 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
                     push_bool(false);
                 break;
             }
+        case Instruction::COMPARE_MORE_THAN_OR_EQUAL:
+            {
+                a++; //Skip number of things to compare, not currently used
+
+                const Type &v1 = pop(), v2 = pop();
+                if(isLessThan(v1, v2) || isEqual(v1, v2))
+                    push_bool(true);
+                else
+                    push_bool(false);
+                break;
+            }
+        case Instruction::COMPARE_LESS_THAN_OR_EQUAL:
+            {
+                a++; //Skip number of things to compare, not currently used
+                const Type &v1 = pop(), v2 = pop();
+                if(!isLessThan(v1, v2) || isEqual(v1, v2))
+                    push_bool(true);
+                else
+                    push_bool(false);
+                break;
+            }
         default:
             throwError("Unknown instruction '" + std::to_string(currentInstruction) + "'");
         }
