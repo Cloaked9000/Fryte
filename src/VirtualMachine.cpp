@@ -186,11 +186,10 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
         case Instruction::COMPARE_EQUAL:
             {
                 unsigned int compareCount = bytecode[++a]; //Number of things to compare
-
-                if(isEqual({pop(), pop()}))
-                    push_bool(true);
-                else
-                    push_bool(false);
+                std::vector<Type> thingsToCompare;
+                for(unsigned int a = 0; a < compareCount; a++)
+                    thingsToCompare.emplace_back(pop());
+                push_bool(isEqual(thingsToCompare));
                 break;
             }
         case Instruction::CONDITIONAL_IF:
@@ -333,41 +332,47 @@ bool VirtualMachine::isEqual(const std::vector<Type> &vals)
             throwError("Can't compare different data types!");
     }
 
-    //Temp
-    Type v1 = vals[0];
-    Type v2 = vals[1];
-
-    //Compare different things depending on the variable types
-    switch(v1.type)
+    auto compare = [] (const Type &v1, const Type &v2) -> bool
     {
-    case INT:
-        if(v1.intData == v2.intData)
-            return true;
-        else
+        //Compare different things depending on the variable types
+        switch(v1.type)
+        {
+        case INT:
+            if(v1.intData == v2.intData)
+                return true;
+            else
+                return false;
+            break;
+        case CHAR:
+            if(v1.charData == v2.charData)
+                return true;
+            else
+                return false;
+            break;
+        case STRING:
+            if(*v1.stringData == *v2.stringData)
+                return true;
+            else
+                return false;
+            break;
+        case BOOL:
+            if(v1.boolData == v2.boolData)
+                return true;
+            else
+                return false;
+        default:
             return false;
-        break;
-    case CHAR:
-        if(v1.charData == v2.charData)
-            return true;
-        else
+        }
+        return false;
+    };
+
+    //Compare the first value against the rest
+    for(unsigned int a = 1; a < vals.size(); a++)
+    {
+        if(!compare(vals[0], vals[a])) //If not matching
             return false;
-        break;
-    case STRING:
-        if(*v1.stringData == *v2.stringData)
-            return true;
-        else
-            return false;
-        break;
-    case BOOL:
-        if(v1.boolData == v2.boolData)
-            return true;
-        else
-            return false;
-    default:
-        throwError("Internal error, attempt to compare unknown data type");
     }
-    throwError("Internal error, isEqual comparison failed for unknown reason");
-    return false;
+    return true;
 }
 
 void VirtualMachine::push_integer(int value)
