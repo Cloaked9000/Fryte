@@ -270,9 +270,27 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
                     push_bool(false);
                 break;
             }
-        case Instruction::COMPARE_AND:
+        case Instruction::COMPARE_OR:
             {
-                std::cout << "\nCompare &&";
+                unsigned int compareCount = bytecode[++a]; //Number of things to compare
+                bool wasFound = false;
+                //Iterate through each thing to compare and push true if any of the values are true then break
+                for(unsigned int a = 0; a < compareCount && !wasFound; a++)
+                {
+                    const Type &current = pop();
+                    if(current.type != DataType::BOOL)
+                        throwError("Invalid OR comparison, not boolean!");
+                    if(current.boolData)
+                    {
+                        push_bool(true);
+                        wasFound = true;
+                    }
+                }
+                if(!wasFound)
+                {
+                    //False otherwise
+                    push_bool(false);
+                }
                 break;
             }
         default:
@@ -329,42 +347,8 @@ bool VirtualMachine::isEqual(const std::vector<Type> &vals)
     for(unsigned int a = 1; a < vals.size(); a++)
     {
         if(vals[a].type != commonType)
-            throwError("Can't compare different data types!");
+            throwError("Can't compare different data types");
     }
-
-    auto compare = [] (const Type &v1, const Type &v2) -> bool
-    {
-        //Compare different things depending on the variable types
-        switch(v1.type)
-        {
-        case INT:
-            if(v1.intData == v2.intData)
-                return true;
-            else
-                return false;
-            break;
-        case CHAR:
-            if(v1.charData == v2.charData)
-                return true;
-            else
-                return false;
-            break;
-        case STRING:
-            if(*v1.stringData == *v2.stringData)
-                return true;
-            else
-                return false;
-            break;
-        case BOOL:
-            if(v1.boolData == v2.boolData)
-                return true;
-            else
-                return false;
-        default:
-            return false;
-        }
-        return false;
-    };
 
     //Compare the first value against the rest
     for(unsigned int a = 1; a < vals.size(); a++)
@@ -436,4 +420,38 @@ void VirtualMachine::pushStackCheck()
 void VirtualMachine::throwError(const std::string& reason)
 {
     throw std::string(reason);
+}
+
+bool VirtualMachine::compare(const Type &v1, const Type &v2)
+{
+    //Compare different things depending on the variable types
+    switch(v1.type)
+    {
+    case INT:
+        if(v1.intData == v2.intData)
+            return true;
+        else
+            return false;
+        break;
+    case CHAR:
+        if(v1.charData == v2.charData)
+            return true;
+        else
+            return false;
+        break;
+    case STRING:
+        if(*v1.stringData == *v2.stringData)
+            return true;
+        else
+            return false;
+        break;
+    case BOOL:
+        if(v1.boolData == v2.boolData)
+            return true;
+        else
+            return false;
+    default:
+        return false;
+    }
+    return false;
 }
