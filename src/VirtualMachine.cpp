@@ -293,6 +293,11 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
                 }
                 break;
             }
+        case Instruction::STACK_WALK:
+            {
+                stackSize = bytecode[++a]; //Get the new position from the next byte
+                break;
+            }
         default:
             throwError("Unknown instruction '" + std::to_string(currentInstruction) + "'");
         }
@@ -362,7 +367,6 @@ bool VirtualMachine::isEqual(const std::vector<Type> &vals)
 void VirtualMachine::push_integer(int value)
 {
     pushStackCheck();
-
     stack[stackSize++] = Type(value);
 }
 
@@ -397,7 +401,6 @@ void VirtualMachine::push_type(Type value)
 Type VirtualMachine::pop()
 {
     popStackCheck();
-
     return stack[--stackSize];
 }
 
