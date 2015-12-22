@@ -32,6 +32,7 @@ enum Instruction
     COMPARE_MORE_THAN_OR_EQUAL = 21, //Compare last two things on the stack and pushes true if object one is more than or equal to object two
     COMPARE_OR = 22, //Compare a series of values and return true if one of them is true. False otherwise. COMPARE_OR(numberOfThings, v1, v2, v3...)
     STACK_WALK = 23, //Sets the current stack size, STACK_WALK(pos)
+    DYNAMIC_GOTO = 24, //Sets the bytecode to a position which is found on top of the stack. DYNAMIC_GOTO(pos)
 };
 
 //List of data types which the virtual machine supports

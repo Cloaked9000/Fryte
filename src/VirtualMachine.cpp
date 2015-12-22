@@ -61,7 +61,7 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
             break;
         }
         case Instruction::GOTO:
-            a = static_cast<int>(bytecode[a+1])-1;
+            a = bytecode[a+1]-1;
             break;
         case Instruction::CONSOLE_IN:
         {
@@ -296,6 +296,11 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
         case Instruction::STACK_WALK:
             {
                 stackSize = bytecode[++a]; //Get the new position from the next byte
+                break;
+            }
+        case Instruction::DYNAMIC_GOTO:
+            {
+                a = pop().intData-1;
                 break;
             }
         default:
