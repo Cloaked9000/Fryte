@@ -16,6 +16,7 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
     for(int a = 0; a < byteSize; a++)
     {
         int currentInstruction = bytecode[a];
+        //std::cout << "\nProcessing: " << currentInstruction;
         switch(currentInstruction)
         {
         case Instruction::CONSOLE_OUT:
@@ -38,8 +39,8 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
             default:
                 throwError(std::string("Failed to CONSOLE_OUT, Unknown data type '" + std::to_string(variable.type) + "'"));
             }
+            break;
         }
-        break;
         case Instruction::CREATE_INT:
             push_integer(bytecode[++a]);
             break;
@@ -57,11 +58,12 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
             for(unsigned int cChar = 0; cChar < stringSize; cChar++) //Read in the string from the bytecode into the allocated memory
                 wholeString[cChar] = bytecode[++a];
 
-            push_string(wholeString); //Push the resulting char*
+            push_string(wholeString); //Push the resulting string
             break;
         }
         case Instruction::GOTO:
-            a = bytecode[a+1]-1;
+            a = bytecode[a+1]-1; //-1 because the bytecode position will increment after the loop ends
+          //  std::cout << "\nGoto " << a+1 << ": " << (int)bytecode[a+1] << std::endl;
             break;
         case Instruction::CONSOLE_IN:
         {
@@ -300,7 +302,8 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
             }
         case Instruction::DYNAMIC_GOTO:
             {
-                a = pop().intData-1;
+                a = pop().intData-1; //-1 as a will increment after this loop ends
+            //    std::cout << "\nGoto " << a+1 << ": " << (int)bytecode[a+1] << std::endl;
                 break;
             }
         default:
