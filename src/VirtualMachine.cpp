@@ -16,7 +16,7 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
     for(int a = 0; a < byteSize; a++)
     {
         int currentInstruction = bytecode[a];
-        //std::cout << "\nProcessing: " << currentInstruction;
+    //    std::cout << "\nProcessing: " << currentInstruction;
         switch(currentInstruction)
         {
         case Instruction::CONSOLE_OUT:
@@ -63,7 +63,6 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
         }
         case Instruction::GOTO:
             a = bytecode[a+1]-1; //-1 because the bytecode position will increment after the loop ends
-          //  std::cout << "\nGoto " << a+1 << ": " << (int)bytecode[a+1] << std::endl;
             break;
         case Instruction::CONSOLE_IN:
         {
@@ -165,7 +164,7 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
             }
         case Instruction::CLONE_TOP:
             {
-                push_type(stack[bytecode[++a]]); //Clone a variable from a position in the stack to the top of the stack
+                push_type(stack[bytecode[++a]]); //Clone a variable from an OFFSET. If 0 is given, the top variable is taken, if 1 is given, the second to top variable is taken etc
                 break;
             }
         case Instruction::CONCENTRATE_STRINGS:
@@ -215,9 +214,7 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
             }
         case Instruction::SET_VARIABLE:
             {
-                Type val = pop(); //Value to set it to
-                unsigned int variableStackOffset = bytecode[++a]; //Find which variable to set
-                stack[variableStackOffset] = val; //Update the value
+                stack[bytecode[++a]] = pop(); //Get variable at the given offset and set it to the given value
                 break;
             }
         case Instruction::COMPARE_UNEQUAL: //Compares last two things on the stack, returns true if they don't match
@@ -303,7 +300,44 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
         case Instruction::DYNAMIC_GOTO:
             {
                 a = pop().intData-1; //-1 as a will increment after this loop ends
-            //    std::cout << "\nGoto " << a+1 << ": " << (int)bytecode[a+1] << std::endl;
+                break;
+            }
+        case Instruction::TO_INTEGER:
+            {
+                Type variable = pop();
+                switch(variable.type)
+                {
+                case DataType::CHAR:
+                        push_integer(variable.charData);
+                    break;
+                case DataType::STRING:
+                        push_integer(atoi(variable.stringData->c_str()));
+                    break;
+                default:
+                    throwError(std::string("Failed to TO_INTEGER, Unknown data type '" + std::to_string(variable.type) + "'"));
+                }
+                break;
+            }
+        case Instruction::TO_STRING:
+            {
+                Type variable = pop();
+                switch(variable.type)
+                {
+                case DataType::INT:
+                        push_string(std::to_string(variable.intData));
+                    break;
+                case DataType::CHAR:
+                        push_string(std::to_string(variable.charData));
+                    break;
+                case DataType::BOOL:
+                        push_string(std::to_string(variable.boolData));
+                    break;
+                case DataType::STRING:
+                        push_string(*variable.stringData);
+                    break;
+                default:
+                    throwError(std::string("Failed to TO_STRING, Unknown data type '" + std::to_string(variable.type) + "'"));
+                }
                 break;
             }
         default:
