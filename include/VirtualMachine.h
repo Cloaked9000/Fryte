@@ -50,14 +50,12 @@ enum DataType
 struct Type
 {
     DataType type; //Store the type of the variable
-
     Type() //Default constructor
     {
         stringData = nullptr;
     }
     virtual ~Type()
     {
-        //Free string allocated space if the type is a string
         if(type == DataType::STRING && stringData != nullptr)
             delete stringData;
     }
@@ -83,6 +81,22 @@ struct Type
     {
         stringData = new std::string(data);
         type = DataType::STRING;
+    }
+
+    Type(const Type &other)
+    {
+        type = other.type;
+        intData = other.intData;
+        if(type == DataType::STRING)
+            stringData = new std::string(*other.stringData);
+    }
+
+    operator=(const Type &other)
+    {
+        type = other.type;
+        intData = other.intData;
+        if(type == DataType::STRING)
+            stringData = new std::string(*other.stringData);
     }
 
     union //Stores the data itself
