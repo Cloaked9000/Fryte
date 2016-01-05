@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <chrono>
 
 //List of instructions which the virtual machine supports
 enum Instruction
@@ -91,7 +92,7 @@ struct Type
             stringData = new std::string(*other.stringData);
     }
 
-    operator=(const Type &other)
+    void operator=(const Type &other)
     {
         type = other.type;
         intData = other.intData;
@@ -130,8 +131,11 @@ private:
     void popStackCheck(); //Checks that a value CAN be popped off, if not, throws an error
     void pushStackCheck(); //Checks that a value CAN be pushed to the stack, if not, throw an error
     void throwError(const std::string &reason); //Throws an error, this function adds additional information to the reason
-    bool isEqual(const std::vector<Type> &vals); //Compares values, returns true if they equal, false otherwise. Throws error if different type.
-    bool isLessThan(const Type &v1, const Type &v2); //Compares two values, returns true if v1 is less than v2, false otherwise. Throws error if different types.
+    bool isEqual(const std::vector<Type> &vals);
+    bool isLessThan(const Type &v1, const Type &v2);
+    bool isMoreThan(const Type &v1, const Type &v2);
+    bool isLessThanOrEqual(const Type &v1, const Type &v2);
+    bool isMoreThanOrEqual(const Type &v1, const Type &v2);
     bool compare(const Type &v1, const Type &v2); //Compares two values, returns true if they're equal, false otherwise. Throws error
 
     static const unsigned int maxStackSize = 500; //Maximum stack size

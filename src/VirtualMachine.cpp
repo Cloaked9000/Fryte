@@ -13,6 +13,8 @@ VirtualMachine::~VirtualMachine()
 
 void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
 {
+    auto startPoint = std::chrono::system_clock::now();
+
     for(int a = 0; a < byteSize; a++)
     {
         int currentInstruction = bytecode[a];
@@ -88,16 +90,10 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
         }
         case Instruction::MATH_ADD:
             {
-                //TEMPORARY
                 unsigned int numberCount = bytecode[++a]; //Get number of bytes to subtract from bytecode
-                std::vector<int> values;
                 int result = 0;
-                for(unsigned int a = 0; a < numberCount; a++) //For the number of arguments specified, pop them all off the stack and subtract from 'result'
-                    values.emplace_back(pop().intData);
-                result = values.back();
-                values.pop_back();
-                for(auto iter = values.rbegin(); iter != values.rend(); iter++)
-                    result += *iter;
+                for(unsigned int b = 0; b < numberCount; b++)
+                    result += pop().intData;
                 push_integer(result); //Push the result to the stack
                 break;
             }
@@ -230,9 +226,7 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
         case Instruction::COMPARE_LESS_THAN:
             {
                 a++; //Skip number of things to compare, not currently used
-
-                const Type &v1 = pop(), v2 = pop();
-                if(!isLessThan(v1, v2) && !isEqual({v1, v2}))
+                if(isLessThan(pop(), pop()))
                     push_bool(true);
                 else
                     push_bool(false);
@@ -241,8 +235,7 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
         case Instruction::COMPARE_MORE_THAN:
             {
                 a++; //Skip number of things to compare, not currently used
-                const Type &v1 = pop(), v2 = pop();
-                if(isLessThan(v1, v2) && !isEqual({v1, v2}))
+                if(isMoreThan(pop(), pop()))
                     push_bool(true);
                 else
                     push_bool(false);
@@ -251,9 +244,7 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
         case Instruction::COMPARE_MORE_THAN_OR_EQUAL:
             {
                 a++; //Skip number of things to compare, not currently used
-
-                const Type &v1 = pop(), v2 = pop();
-                if(isLessThan(v1, v2) || isEqual({v1, v2}))
+                if(isMoreThanOrEqual(pop(), pop()))
                     push_bool(true);
                 else
                     push_bool(false);
@@ -262,8 +253,7 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
         case Instruction::COMPARE_LESS_THAN_OR_EQUAL:
             {
                 a++; //Skip number of things to compare, not currently used
-                const Type &v1 = pop(), v2 = pop();
-                if(!isLessThan(v1, v2) || isEqual({v1, v2}))
+                if(!isLessThanOrEqual(pop(), pop()))
                     push_bool(true);
                 else
                     push_bool(false);
@@ -344,59 +334,41 @@ void VirtualMachine::interpret(unsigned char bytecode[], int byteSize)
             throwError("Unknown instruction '" + std::to_string(currentInstruction) + "'");
         }
     }
+
+    auto endPoint = std::chrono::system_clock::now();
+    std::cout << "\nTime elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(endPoint - startPoint).count() << "ms";
 }
 
 bool VirtualMachine::isLessThan(const Type& v1, const Type& v2)
 {
-    //Ensure that they're the same type or the union comparison will screw up
-    if(v2.type != v1.type)
-    {
-        throwError("Can't compare different data types!");
-    }
+    if(v1.intData < v2.intData)
+        return true;
+    return false;
+}
 
-    //Compare different things depending on the variable types
-    switch(v1.type)
-    {
-    case INT:
-        if(v1.intData < v2.intData)
-            return true;
-        else
-            return false;
-        break;
-    case CHAR:
-        if(v1.charData < v2.charData)
-            return true;
-        else
-            return false;
-        break;
-    case STRING:
-        if(v1.stringData->size() < v2.stringData->size())
-            return true;
-        else
-            return false;
-        break;
-    case BOOL:
-        if(v1.boolData < v2.boolData)
-            return true;
-        else
-            return false;
-    default:
-        throwError("Internal error, attempt to compare unknown data type");
-    }
-    throwError("Internal error, isEqual comparison failed for unknown reason");
+bool VirtualMachine::isMoreThan(const Type& v1, const Type& v2)
+{
+    if(v1.intData > v2.intData)
+        return true;
+    return false;
+}
+
+bool VirtualMachine::isLessThanOrEqual(const Type& v1, const Type& v2)
+{
+    if(v1.intData <= v2.intData)
+        return true;
+    return false;
+}
+
+bool VirtualMachine::isMoreThanOrEqual(const Type& v1, const Type& v2)
+{
+    if(v1.intData >= v2.intData)
+        return true;
     return false;
 }
 
 bool VirtualMachine::isEqual(const std::vector<Type> &vals)
 {
-    //Ensure that they're the same type or the union comparison will screw up
-    DataType commonType = vals[0].type;
-    for(unsigned int a = 1; a < vals.size(); a++)
-    {
-        if(vals[a].type != commonType)
-            throwError("Can't compare different data types");
-    }
-
     //Compare the first value against the rest
     for(unsigned int a = 1; a < vals.size(); a++)
     {
@@ -415,28 +387,24 @@ void VirtualMachine::push_integer(int value)
 void VirtualMachine::push_char(unsigned char value)
 {
     pushStackCheck();
-
     stack[stackSize++] = Type(value);
 }
 
 void VirtualMachine::push_bool(bool value)
 {
     pushStackCheck();
-
     stack[stackSize++] = Type(value);
 }
 
 void VirtualMachine::push_string(const std::string &value)
 {
     pushStackCheck();
-
     stack[stackSize++] = Type(value);
 }
 
 void VirtualMachine::push_type(Type value)
 {
     pushStackCheck();
-
     stack[stackSize++] = value;
 }
 
@@ -470,33 +438,15 @@ void VirtualMachine::throwError(const std::string& reason)
 bool VirtualMachine::compare(const Type &v1, const Type &v2)
 {
     //Compare different things depending on the variable types
-    switch(v1.type)
+    if(v1.type == DataType::STRING)
     {
-    case INT:
-        if(v1.intData == v2.intData)
-            return true;
-        else
-            return false;
-        break;
-    case CHAR:
-        if(v1.charData == v2.charData)
-            return true;
-        else
-            return false;
-        break;
-    case STRING:
         if(*v1.stringData == *v2.stringData)
             return true;
-        else
-            return false;
-        break;
-    case BOOL:
-        if(v1.boolData == v2.boolData)
+    }
+    else
+    {
+        if(v1.intData == v2.intData)
             return true;
-        else
-            return false;
-    default:
-        return false;
     }
     return false;
 }
