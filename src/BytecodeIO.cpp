@@ -10,10 +10,10 @@ BytecodeIO::~BytecodeIO()
     //dtor
 }
 
-bool BytecodeIO::readBytecode(const std::string& filepath, std::vector<unsigned char>& byteCode)
+bool BytecodeIO::readBytecode(const std::string& filepath, std::vector<unsigned int>& byteCode)
 {
     std::streampos fileSize;
-    char * memblock;
+    unsigned char * memblock;
 
     std::ifstream file;
     file.open(filepath, std::ios::in | std::ios::binary | std::ios::ate);
@@ -21,19 +21,19 @@ bool BytecodeIO::readBytecode(const std::string& filepath, std::vector<unsigned 
         return false;
 
     fileSize = file.tellg();
-    memblock = new char [fileSize];
+    memblock = new unsigned char [fileSize];
     file.seekg(0, std::ios::beg);
-    file.read(memblock, fileSize);
+    file.read((char*)memblock, fileSize);
     file.close();
 
     for(unsigned int a = 0; a < fileSize; a++)
-        byteCode.emplace_back(memblock[a]);
+        byteCode.emplace_back(static_cast<unsigned int>(memblock[a]));
 
     delete[] memblock;
     return true;
 }
 
-bool BytecodeIO::writeBytecode(const std::string& filepath, const std::vector<unsigned char>& byteCode)
+bool BytecodeIO::writeBytecode(const std::string& filepath, const std::vector<unsigned int>& byteCode)
 {
     std::ofstream file;
     file.open(filepath, std::ios::out | std::ios::binary);
