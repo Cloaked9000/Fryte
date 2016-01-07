@@ -2,9 +2,9 @@
 #define VIRTUALMACHINE_H
 
 #include <iostream>
-#include <string>
 #include <vector>
 #include <chrono>
+#include <cstring>
 
 #include "VMTypes.h"
 
@@ -53,8 +53,43 @@ private:
     void popStackCheck(); //Checks that a value CAN be popped off, if not, throws an error
     void pushStackCheck(); //Checks that a value CAN be pushed to the stack, if not, throw an error
     void throwError(const std::string &reason); //Throws an error, this function adds additional information to the reason
-    bool isEqual(const std::vector<Type> &vals);
-    bool compare(const Type &v1, const Type &v2); //Compares two values, returns true if they're equal, false otherwise. Throws error
+    inline bool isEqual(unsigned int compareCount)
+    {
+        Type &&val1 = pop();
+        for(unsigned int b = 1; b < compareCount; ++b)
+        {
+            if(!compare(val1, pop()))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    inline bool compare(const Type &v1, const Type &v2)
+    {
+        switch(v1.type)
+        {
+        case INT:
+            if(v1.intData == v2.intData)
+                return true;
+            break;
+        case CHAR:
+            if(v1.charData == v2.charData)
+                return true;
+            break;
+        case STRING:
+            if(*v1.stringData == *v2.stringData)
+                return true;
+            break;
+        case BOOL:
+            if(v1.boolData == v2.boolData)
+                return true;
+        default:
+            return false;
+        }
+        return false;
+    }
 
     inline bool isLessThan(const Type& v1, const Type& v2)
     {

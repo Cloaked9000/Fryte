@@ -80,6 +80,7 @@ struct Type
         if(other.type == DataType::STRING)
         {
             stringData = other.stringData;
+            other.stringData = nullptr;
         }
         else
         {

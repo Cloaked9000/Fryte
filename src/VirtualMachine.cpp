@@ -182,8 +182,7 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
             {
                 //Move bytecode offset to the one specified in the bytecode.
                 //bytecode[a+1] = position to set if false
-                Type val = pop();
-                if(!val.boolData)
+                if(!pop().boolData)
                 {
                     a = bytecode[a+1];
                 }
@@ -200,20 +199,12 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
             }
         case Instruction::COMPARE_EQUAL:
             {
-                unsigned int compareCount = bytecode[++a]; //Number of things to compare
-                std::vector<Type> thingsToCompare;
-                for(unsigned int b = 0; b < compareCount; ++b)
-                    thingsToCompare.emplace_back(pop());
-                push_bool(isEqual(thingsToCompare));
+                push_bool(isEqual(bytecode[++a])); //Push results of comparison. Taking argument count from next bytecode
                 break;
             }
         case Instruction::COMPARE_UNEQUAL: //Compares last X things on the stack, returns true if they don't match
             {
-                unsigned int compareCount = bytecode[++a]; //Number of things to compare
-                std::vector<Type> thingsToCompare;
-                for(unsigned int b = 0; b < compareCount; ++b)
-                    thingsToCompare.emplace_back(pop());
-                push_bool(!isEqual(thingsToCompare));
+                push_bool(!isEqual(bytecode[++a])); //Push results of comparison. Taking argument count from next bytecode
                 break;
             }
         case Instruction::COMPARE_LESS_THAN:
@@ -255,24 +246,19 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
         case Instruction::COMPARE_OR:
             {
                 unsigned int compareCount = bytecode[++a]; //Number of things to compare
-                bool wasFound = false;
-                //Iterate through each thing to compare and push true if any of the values are true then break
-                for(unsigned int a = 0; a < compareCount && !wasFound; ++a)
+                bool orPassed = false;
+                for(unsigned int b = 0; b < compareCount; b++)
                 {
-                    const Type &current = pop();
-                    if(current.type != DataType::BOOL)
-                        throwError("Invalid OR comparison, not boolean!");
-                    if(current.boolData)
+                    if(pop().boolData)
                     {
-                        push_bool(true);
-                        wasFound = true;
+                        orPassed = true;
+                        b = compareCount;
                     }
                 }
-                if(!wasFound)
-                {
-                    //False otherwise
+                if(orPassed)
+                    push_bool(true);
+                else
                     push_bool(false);
-                }
                 break;
             }
         case Instruction::STACK_WALK:
@@ -332,37 +318,7 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
     std::cout << "\nTime elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(endPoint - startPoint).count() << "ms";
 }
 
-
-bool VirtualMachine::isEqual(const std::vector<Type> &vals)
-{
-    //Compare the first value against the rest
-    for(unsigned int a = 1; a < vals.size(); ++a)
-    {
-        if(!compare(vals[0], vals[a])) //If not matching
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
 void VirtualMachine::throwError(const std::string& reason)
 {
     throw std::string(reason);
-}
-
-bool VirtualMachine::compare(const Type &v1, const Type &v2)
-{
-    //Compare different things depending on the variable types
-    if(v1.type == DataType::STRING)
-    {
-        if(*v1.stringData == *v2.stringData)
-            return true;
-    }
-    else
-    {
-        if(v1.intData == v2.intData)
-            return true;
-    }
-    return false;
 }
