@@ -66,7 +66,7 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
             break;
         case Instruction::CONSOLE_IN:
         {
-            Type &variable = stack[bytecode[++a]];
+            Type &variable = stack[stackSize - bytecode[++a] - 1];
             switch(variable.type)
             {
             case DataType::INT:
@@ -158,7 +158,7 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
             }
         case Instruction::CLONE_TOP:
             {
-                push_type(stack[bytecode[++a]]); //Clone a variable from an OFFSET. If 0 is given, the top variable is taken, if 1 is given, the second to top variable is taken etc
+                push_type(stack[stackSize - bytecode[++a] - 1]); //Clone a variable from an OFFSET. If 0 is given, the top variable is taken, if 1 is given, the second to top variable is taken etc
                 break;
             }
         case Instruction::CONCENTRATE_STRINGS:
@@ -194,7 +194,7 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
             }
         case Instruction::SET_VARIABLE:
             {
-                stack[bytecode[++a]] = pop(); //Get variable at the given offset and set it to the given value
+                stack[stackSize - bytecode[++a]] = pop(); //Get variable at the given offset and set it to the given value
                 break;
             }
         case Instruction::COMPARE_EQUAL:
@@ -263,7 +263,7 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
             }
         case Instruction::STACK_WALK:
             {
-                stackSize = bytecode[++a]; //Get the new position from the next byte
+                stackSize -= bytecode[++a]; //Get the new position from the next byte
                 break;
             }
         case Instruction::DYNAMIC_GOTO:
