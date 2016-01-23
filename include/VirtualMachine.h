@@ -18,7 +18,7 @@ public:
 
     void interpret(unsigned int bytecode[], int byteSize); //Executes an array of bytecode
 
-    inline void push_integer(int value)
+    inline void push_integer(unsigned int value)
     {
         stack[stackSize++] = Type(value);
     }

@@ -55,7 +55,7 @@ struct Type
             delete stringData;
     }
 
-    Type(int data) noexcept //Integer constructor
+    Type(unsigned int data) noexcept //Integer constructor
     : intData(data), type(DataType::INT){}
 
     Type(bool data) noexcept //Boolean constructor
@@ -98,7 +98,7 @@ struct Type
 
     union //Stores the data itself
     {
-        int intData;
+        unsigned int intData;
         bool boolData;
         unsigned char charData;
         std::string *stringData;
