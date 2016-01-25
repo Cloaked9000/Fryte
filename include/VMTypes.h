@@ -31,6 +31,7 @@ enum Instruction
     DYNAMIC_GOTO = 24, //Sets the bytecode to a position which is found on top of the stack. DYNAMIC_GOTO(pos)
     TO_INTEGER = 25, //Converts the value on the top of the stack to a string and pushes the new value
     TO_STRING = 26, //Converts the value on the top of the stack to an integer and then pushes the new value
+    COMPARE_AND = 27, //Compare a series of values and return true if all values are true. False otherwise. COMPARE_AND(ArgCount, Args...)
 };
 
 //List of data types which the virtual machine supports

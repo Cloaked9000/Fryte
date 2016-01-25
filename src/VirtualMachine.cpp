@@ -309,6 +309,24 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
                 }
                 break;
             }
+            case Instruction::COMPARE_AND:
+            {
+                unsigned int compareCount = bytecode[++a]; //Number of things to compare
+                bool andPassed = true;
+                for(unsigned int b = 0; b < compareCount && andPassed; b++)
+                {
+                    if(!pop().boolData)
+                    {
+                        andPassed = false;
+                        b = compareCount;
+                    }
+                }
+                if(andPassed)
+                    push_bool(true);
+                else
+                    push_bool(false);
+                break;
+            }
         default:
             throwError("Unknown instruction '" + std::to_string((int)bytecode[a]) + "'");
         }
