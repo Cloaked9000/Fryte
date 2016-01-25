@@ -5,6 +5,7 @@
 #include <vector>
 #include <chrono>
 #include <cstring>
+#include <sstream>
 
 #include "VMTypes.h"
 

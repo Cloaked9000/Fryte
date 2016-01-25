@@ -21,24 +21,30 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
         {
         case Instruction::CONSOLE_OUT:
         {
-            Type variable = pop();
-            switch(variable.type)
+            std::stringstream output;
+            unsigned int argCount = bytecode[++a];
+            for(unsigned int arg = 0; arg < argCount; arg++)
             {
-            case DataType::INT:
-                std::cout << variable.intData;
-                break;
-            case DataType::CHAR:
-                std::cout << variable.charData;
-                break;
-            case DataType::BOOL:
-                std::cout << variable.boolData;
-                break;
-            case DataType::STRING:
-                std::cout << *variable.stringData;
-                break;
-            default:
-                throwError(std::string("Failed to CONSOLE_OUT, Unknown data type '" + std::to_string(variable.type) + "'"));
+                Type variable = pop();
+                switch(variable.type)
+                {
+                case DataType::INT:
+                    output << variable.intData;
+                    break;
+                case DataType::CHAR:
+                    output << variable.charData;
+                    break;
+                case DataType::BOOL:
+                    output << variable.boolData;
+                    break;
+                case DataType::STRING:
+                    output << *variable.stringData;
+                    break;
+                default:
+                    throwError(std::string("Failed to CONSOLE_OUT, Unknown data type '" + std::to_string(variable.type) + "'"));
+                }
             }
+            std::cout << output.str();
             break;
         }
         case Instruction::CREATE_INT:
@@ -178,6 +184,11 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
                 push_string(stringBuffer);
                 break;
             }
+        case Instruction::COMPARE_EQUAL:
+            {
+                push_bool(isEqual(bytecode[++a])); //Push results of comparison. Taking argument count from next bytecode
+                break;
+            }
         case Instruction::CONDITIONAL_IF:
             {
                 //Move bytecode offset to the one specified in the bytecode.
@@ -195,11 +206,6 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
         case Instruction::SET_VARIABLE:
             {
                 stack[stackSize - bytecode[++a]] = pop(); //Get variable at the given offset and set it to the given value
-                break;
-            }
-        case Instruction::COMPARE_EQUAL:
-            {
-                push_bool(isEqual(bytecode[++a])); //Push results of comparison. Taking argument count from next bytecode
                 break;
             }
         case Instruction::COMPARE_UNEQUAL: //Compares last X things on the stack, returns true if they don't match
