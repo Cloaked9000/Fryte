@@ -95,7 +95,7 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
         case Instruction::MATH_ADD:
             {
                 unsigned int numberCount = bytecode[++a]; //Get number of bytes to subtract from bytecode
-                int result = 0;
+                int32_t result = 0;
                 for(unsigned int b = 0; b < numberCount; ++b)
                     result += pop().intData;
                 push_integer(result); //Push the result to the stack
@@ -106,7 +106,7 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
                 //TEMPORARY
                 unsigned int numberCount = bytecode[++a]; //Get number of bytes to subtract from bytecode
                 std::vector<unsigned int> values;
-                int result = 0;
+                int32_t result = 0;
                 for(unsigned int a = 0; a < numberCount; ++a) //For the number of arguments specified, pop them all off the stack and subtract from 'result'
                     values.emplace_back(pop().intData);
                 result = values.back();
@@ -119,14 +119,9 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
         case Instruction::MATH_MULTIPLY:
             {
                 unsigned int numberCount = bytecode[++a]; //Get number of bytes to subtract from bytecode
-                std::vector<unsigned int> values;
-                int result = 0;
-                for(unsigned int a = 0; a < numberCount; ++a) //For the number of arguments specified, pop them all off the stack and subtract from 'result'
-                    values.emplace_back(pop().intData);
-                result = values.back();
-                values.pop_back();
-                for(auto iter = values.rbegin(); iter != values.rend(); ++iter)
-                    result *= *iter;
+                int32_t result = 1;
+                for(unsigned int b = 0; b < numberCount; ++b)
+                    result *= pop().intData;
                 push_integer(result); //Push the result to the stack
                 break;
             }
@@ -333,6 +328,16 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
                     push_bool(false);
                 break;
             }
+            case Instruction::DYNAMIC_CLONE_TOP:
+            {
+                push_type(stack[stackSize - pop().intData - 1]); //Works the same way as CLONE_TOP, takes value from stack instead of next byte though
+                break;
+            }
+            case Instruction::DYNAMIC_SET_VARIABLE:
+            {
+                stack[stackSize - pop().intData] = pop(); //Get variable at the given offset and set it to the given value
+                break;
+            }
         default:
             throwError("Unknown instruction '" + std::to_string((int)bytecode[a]) + "'");
         }
@@ -340,6 +345,35 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
 
     auto endPoint = std::chrono::system_clock::now();
     std::cout << "\nTime elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(endPoint - startPoint).count() << "ms";
+
+    //Dump variables to file for debugging
+    std::ofstream dump("dump.txt");
+    if(!dump.is_open())
+    {
+        std::cout << "\nFailed to open file for dump.";
+        return;
+    }
+    for(unsigned int a = 0; a < stackSize; a++)
+    {
+        dump << a << ": ";
+        switch(stack[a].type)
+        {
+        case DataType::INT:
+            dump << stack[a].intData;
+            break;
+        case DataType::CHAR:
+            dump << stack[a].charData;
+            break;
+        case DataType::BOOL:
+            dump << stack[a].boolData;
+            break;
+        case DataType::STRING:
+            dump << *stack[a].stringData;
+            break;
+        }
+        dump << std::endl;
+    }
+    dump.close();
 }
 
 void VirtualMachine::throwError(const std::string& reason)

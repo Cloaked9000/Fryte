@@ -32,6 +32,8 @@ enum Instruction
     TO_INTEGER = 25, //Converts the value on the top of the stack to a string and pushes the new value
     TO_STRING = 26, //Converts the value on the top of the stack to an integer and then pushes the new value
     COMPARE_AND = 27, //Compare a series of values and return true if all values are true. False otherwise. COMPARE_AND(ArgCount, Args...)
+    DYNAMIC_CLONE_TOP = 28, //Takes an offset from the top of the stack and clones the variable at that offset to the top. DYNAMIC_CLONE_TOP(
+    DYNAMIC_SET_VARIABLE = 29, //Takes a variable position and variable value from the top of the stack and sets that variable to that value. DYNAMIC_SET_VARIABLE(VALUE, POSITION)
 };
 
 //List of data types which the virtual machine supports

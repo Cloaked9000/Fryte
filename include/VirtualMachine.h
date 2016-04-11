@@ -6,6 +6,7 @@
 #include <chrono>
 #include <cstring>
 #include <sstream>
+#include <fstream>
 
 #include "VMTypes.h"
 
