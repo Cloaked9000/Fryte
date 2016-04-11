@@ -335,7 +335,8 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
             }
             case Instruction::DYNAMIC_SET_VARIABLE:
             {
-                stack[stackSize - pop().intData] = pop(); //Get variable at the given offset and set it to the given value
+                Type v1 = pop();
+                stack[stackSize - v1.intData] = pop(); //Get variable at the given offset and set it to the given value
                 break;
             }
         default:
