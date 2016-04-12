@@ -113,7 +113,7 @@ private:
         return (v1.intData >= v2.intData);
     }
 
-    static const unsigned int maxStackSize = 500; //Maximum stack size
+    static const unsigned int maxStackSize = 30000; //Maximum stack size
     unsigned int stackSize; //Current stack position
     Type stack[maxStackSize]; //The stack itself
 };
