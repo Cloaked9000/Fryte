@@ -122,33 +122,21 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
             }
         case Instruction::MATH_DIVIDE:
             {
-                //TEMPORARY
                 unsigned int numberCount = bytecode[++a]; //Get number of bytes to subtract from bytecode
-                std::vector<unsigned int> values;
-                int result = 0;
-                for(unsigned int a = 0; a < numberCount; ++a) //For the number of arguments specified, pop them all off the stack and subtract from 'result'
-                    values.emplace_back(pop().intData);
-                result = values.back();
-                values.pop_back();
-                for(auto iter = values.rbegin(); iter != values.rend(); ++iter)
-                    result /= *iter;
+                stackSize -= numberCount;
+                int32_t result = stack[stackSize].intData;
+                for(unsigned int a = stackSize+1; a < stackSize + numberCount; ++a) //For the number of arguments specified, pop them all off the stack and subtract from 'result'
+                    result /= stack[a].intData;
                 push_integer(result); //Push the result to the stack
                 break;
             }
         case Instruction::MATH_MOD:
             {
-                //TEMPORARY
                 unsigned int numberCount = bytecode[++a]; //Get number of bytes to subtract from bytecode
-                std::vector<unsigned int> values;
-                int result = 0;
-                for(unsigned int a = 0; a < numberCount; ++a) //For the number of arguments specified, pop them all off the stack and subtract from 'result'
-                    values.emplace_back(pop().intData);
-                result = values.back();
-                values.pop_back();
-                for(auto iter = values.rbegin(); iter != values.rend(); ++iter)
-                {
-                    result %= *iter;
-                }
+                stackSize -= numberCount;
+                int32_t result = stack[stackSize].intData;
+                for(unsigned int a = stackSize+1; a < stackSize + numberCount; ++a) //For the number of arguments specified, pop them all off the stack and subtract from 'result'
+                    result %= stack[a].intData;
                 push_integer(result); //Push the result to the stack
                 break;
             }
