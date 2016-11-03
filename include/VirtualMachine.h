@@ -40,27 +40,25 @@ public:
         stack[stackSize++] = Type(value);
     }
 
-    inline void push_type(Type value)
+    inline void push_type(Type &value)
     {
         stack[stackSize++] = value;
     }
 
-    inline Type pop()
+    inline Type &&pop()
     {
-        return stack[--stackSize];
+        return std::move(stack[--stackSize]);
     }
 
 protected:
 private:
-    void popStackCheck(); //Checks that a value CAN be popped off, if not, throws an error
-    void pushStackCheck(); //Checks that a value CAN be pushed to the stack, if not, throw an error
     void throwError(const std::string &reason); //Throws an error, this function adds additional information to the reason
     inline bool isEqual(unsigned int compareCount)
     {
         Type &&val1 = pop();
         for(unsigned int b = 1; b < compareCount; ++b)
         {
-            if(!compare(val1, pop()))
+            if(!isEqual(val1, pop()))
             {
                 return false;
             }
@@ -68,25 +66,18 @@ private:
         return true;
     }
 
-    inline bool compare(const Type &v1, const Type &v2)
+    inline bool isEqual(const Type &v1, const Type &v2)
     {
         switch(v1.type)
         {
         case INT:
-            if(v1.intData == v2.intData)
-                return true;
-            break;
+            return (v1.intData == v2.intData);
         case CHAR:
-            if(v1.charData == v2.charData)
-                return true;
-            break;
+            return (v1.charData == v2.charData);
         case STRING:
-            if(*v1.stringData == *v2.stringData)
-                return true;
-            break;
+            return (*v1.stringData == *v2.stringData);
         case BOOL:
-            if(v1.boolData == v2.boolData)
-                return true;
+            return (v1.boolData == v2.boolData);
         default:
             return false;
         }
@@ -108,7 +99,7 @@ private:
         return (v1.intData <= v2.intData);
     }
 
-    inline bool isMoreThanOrEqual(const Type& v1, const Type& v2)
+    inline bool isGreaterOrEqual(const Type &v1, const Type &v2)
     {
         return (v1.intData >= v2.intData);
     }

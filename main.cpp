@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <string>
 
 #include "VirtualMachine.h"
 #include "BytecodeIO.h"
@@ -11,7 +10,10 @@ using namespace std;
 int main(int argc, char *argv[])
 {
     if(argc < 2)
+    {
+        std::cout << "Invalid number of arguments passed. Expected script path." << std::endl;
         return -1;
+    }
 
     std::vector<unsigned int> bytes;
     BytecodeIO::readBytecode(argv[1], bytes);

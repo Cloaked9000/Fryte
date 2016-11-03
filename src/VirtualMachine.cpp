@@ -1,3 +1,4 @@
+#include <map>
 #include "VirtualMachine.h"
 
 VirtualMachine::VirtualMachine()
@@ -14,7 +15,6 @@ VirtualMachine::~VirtualMachine()
 void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
 {
     auto startPoint = std::chrono::system_clock::now();
-
     for(int a = 0; a < byteSize; ++a)
     {
         switch(bytecode[a])
@@ -62,7 +62,7 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
             std::string wholeString;
             wholeString.resize(stringSize);
             for(unsigned int cChar = 0; cChar < stringSize; ++cChar) //Read in the string from the bytecode into the allocated memory
-                wholeString[cChar] = bytecode[++a];
+                wholeString[cChar] = (char)bytecode[++a];
 
             push_string(wholeString); //Push the resulting string
             break;
@@ -95,7 +95,7 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
         case Instruction::MATH_ADD:
             {
                 unsigned int numberCount = bytecode[++a]; //Get number of bytes to subtract from bytecode
-                int32_t result = 0;
+                unsigned int result = 0;
                 for(unsigned int b = 0; b < numberCount; ++b)
                     result += pop().intData;
                 push_integer(result); //Push the result to the stack
@@ -105,16 +105,16 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
             {
                 unsigned int numberCount = bytecode[++a]; //Get number of bytes to subtract from bytecode
                 stackSize -= numberCount;
-                int32_t result = stack[stackSize].intData;
-                for(unsigned int a = stackSize+1; a < stackSize + numberCount; ++a) //For the number of arguments specified, pop them all off the stack and subtract from 'result'
-                    result -= stack[a].intData;
+                unsigned int result = stack[stackSize].intData;
+                for(unsigned int b = stackSize+1; b < stackSize + numberCount; ++b) //For the number of arguments specified, pop them all off the stack and subtract from 'result'
+                    result -= stack[b].intData;
                 push_integer(result); //Push the result to the stack
                 break;
             }
         case Instruction::MATH_MULTIPLY:
             {
                 unsigned int numberCount = bytecode[++a]; //Get number of bytes to subtract from bytecode
-                int32_t result = 1;
+                unsigned int result = 1;
                 for(unsigned int b = 0; b < numberCount; ++b)
                     result *= pop().intData;
                 push_integer(result); //Push the result to the stack
@@ -124,9 +124,9 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
             {
                 unsigned int numberCount = bytecode[++a]; //Get number of bytes to subtract from bytecode
                 stackSize -= numberCount;
-                int32_t result = stack[stackSize].intData;
-                for(unsigned int a = stackSize+1; a < stackSize + numberCount; ++a) //For the number of arguments specified, pop them all off the stack and subtract from 'result'
-                    result /= stack[a].intData;
+                unsigned int result = stack[stackSize].intData;
+                for(unsigned int b = stackSize+1; b < stackSize + numberCount; ++b) //For the number of arguments specified, pop them all off the stack and subtract from 'result'
+                    result /= stack[b].intData;
                 push_integer(result); //Push the result to the stack
                 break;
             }
@@ -134,9 +134,9 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
             {
                 unsigned int numberCount = bytecode[++a]; //Get number of bytes to subtract from bytecode
                 stackSize -= numberCount;
-                int32_t result = stack[stackSize].intData;
-                for(unsigned int a = stackSize+1; a < stackSize + numberCount; ++a) //For the number of arguments specified, pop them all off the stack and subtract from 'result'
-                    result %= stack[a].intData;
+                unsigned int result = stack[stackSize].intData;
+                for(unsigned int b = stackSize+1; b < stackSize + numberCount; ++b) //For the number of arguments specified, pop them all off the stack and subtract from 'result'
+                    result %= stack[b].intData;
                 push_integer(result); //Push the result to the stack
                 break;
             }
@@ -151,7 +151,7 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
                 unsigned int numberOfStrings = bytecode[++a];
                 std::string stringBuffer;
                 std::vector<std::string> poppedStrings;
-                for(unsigned int a = 0; a < numberOfStrings; ++a)
+                for(unsigned int b = 0; b < numberOfStrings; ++b)
                     poppedStrings.emplace_back(*pop().stringData);
 
                 //Now add the strings to a buffer in reverse, as we need the first one to be first in the string, not last
@@ -194,37 +194,25 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
         case Instruction::COMPARE_LESS_THAN:
             {
                 ++a; //Skip number of things to compare, not currently used
-                if(isLessThan(pop(), pop()))
-                    push_bool(true);
-                else
-                    push_bool(false);
+                push_bool(isLessThan(pop(), pop()));
                 break;
             }
         case Instruction::COMPARE_MORE_THAN:
             {
                 ++a; //Skip number of things to compare, not currently used
-                if(isMoreThan(pop(), pop()))
-                    push_bool(true);
-                else
-                    push_bool(false);
+                push_bool(isMoreThan(pop(), pop()));
                 break;
             }
         case Instruction::COMPARE_MORE_THAN_OR_EQUAL:
             {
                 ++a; //Skip number of things to compare, not currently used
-                if(isMoreThanOrEqual(pop(), pop()))
-                    push_bool(true);
-                else
-                    push_bool(false);
+                push_bool(isGreaterOrEqual(pop(), pop()));
                 break;
             }
         case Instruction::COMPARE_LESS_THAN_OR_EQUAL:
             {
                 ++a; //Skip number of things to compare, not currently used
-                if(isLessThanOrEqual(pop(), pop()))
-                    push_bool(true);
-                else
-                    push_bool(false);
+                push_bool(isLessThanOrEqual(pop(), pop()));
                 break;
             }
         case Instruction::COMPARE_OR:
@@ -239,10 +227,7 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
                         b = compareCount;
                     }
                 }
-                if(orPassed)
-                    push_bool(true);
-                else
-                    push_bool(false);
+                push_bool(orPassed);
                 break;
             }
         case Instruction::STACK_WALK:
@@ -264,7 +249,7 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
                         push_integer(variable.charData);
                     break;
                 case DataType::STRING:
-                        push_integer(atoi(variable.stringData->c_str()));
+                        push_integer(std::stoul(variable.stringData->c_str()));
                     break;
                 default:
                     throwError(std::string("Failed to TO_INTEGER, Unknown data type '" + std::to_string(variable.type) + "'"));
@@ -305,10 +290,7 @@ void VirtualMachine::interpret(unsigned int bytecode[], int byteSize)
                         b = compareCount;
                     }
                 }
-                if(andPassed)
-                    push_bool(true);
-                else
-                    push_bool(false);
+                push_bool(andPassed);
                 break;
             }
             case Instruction::DYNAMIC_CLONE_TOP:

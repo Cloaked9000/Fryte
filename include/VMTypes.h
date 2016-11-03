@@ -49,9 +49,8 @@ enum DataType
 struct Type
 {
     Type() noexcept //Default constructor
-    {
-        stringData = nullptr;
-    }
+    : stringData(nullptr){}
+
     virtual ~Type() noexcept
     {
         if(type == DataType::STRING && stringData != nullptr)
@@ -78,8 +77,8 @@ struct Type
     }
 
     Type(Type &&other) noexcept //Move constructor
+    : type(other.type)
     {
-        type = other.type;
         if(other.type == DataType::STRING)
         {
             stringData = other.stringData;
@@ -91,12 +90,26 @@ struct Type
         }
     }
 
-    void operator=(const Type &other) noexcept //Assignment constructor
+    void operator=(const Type &other) noexcept //Assignment operator
     {
         type = other.type;
         intData = other.intData;
         if(type == DataType::STRING)
             stringData = new std::string(*other.stringData);
+    }
+
+    void operator=(Type &&other) noexcept //Assignment operator
+    {
+        type = other.type;
+        if(other.type == DataType::STRING)
+        {
+            stringData = other.stringData;
+            other.stringData = nullptr;
+        }
+        else
+        {
+            intData = other.intData;
+        }
     }
 
     union //Stores the data itself
